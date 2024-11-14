@@ -2,6 +2,12 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const cors = require('cors');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+// Create express app
+const app = express();
+
+
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)
@@ -10,14 +16,15 @@ mongoose.connect(process.env.MONGO_URL)
 
 
 //middleware
-app.use(express.json  ());  
+app.use(express.json());  
+app.use(cookieParser());
+app.use(express.urlencoded({extended: false}));
 
 
-// Create express app
-const app = express();
 
 
-app.use ('/', require('./routes/authRoutes'));
+
+app.use ('/', require('./routes/authroutes'));
 
 
 

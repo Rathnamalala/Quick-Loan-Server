@@ -1,4 +1,7 @@
 const User = require('../models/userModel')
+const { hashPassword, comparePassword } = require('../helpers/auth');
+const jwt = require('jsonwebtoken');
+
 
 
 const test = (req, res) => {
@@ -33,9 +36,16 @@ const registerUser = async (req, res) => {
       })
     }
 
-    const user =await User.create([
-      name,email,password
-    ])
+    //hash password
+    const hashedPassword = await hashPassword(password);
+
+
+
+
+    // create user in database
+    const user =await User.create({
+      name,email,password: hashedPassword,
+    })
 
 
     return res.json(user)
@@ -49,6 +59,28 @@ const registerUser = async (req, res) => {
 
 
 
-
-
-module.exports = { test, registerUser };
+//loging endpoint
+const loginUser = async (req, res) => {
+  try {
+    const {email, password} = req.body;
+    //check if email exist
+    const user = await User.findOne({email});
+    if(!user) {
+        return res.json({error: 'Invalid credentials'});
+      }
+    // check password
+    const match = await comparePassword(password, user.password);
+    if(match) {
+      jwt.sign({email: user.email, id: user._id}, process.env.JWT_SECRET, {}, (err, token) => {
+        if(err) throw err;
+        res.cookie('token', token).json(user);
+      });
+    }
+    if(!match) {
+      return res.json({error: 'Invalid credentials'});
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+module.exports = { test, registerUser, loginUser };
