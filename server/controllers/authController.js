@@ -12,46 +12,43 @@ const test = (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const{name,email,password} = req.body;
-    //check if name was entered
-    if(!name) {
-      return res.json({
-        error: 'Name is required'
-      });
+    const { firstName, lastName, gender, email, mobileNumber, dateOfBirth, password } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !gender || !email || !mobileNumber || !dateOfBirth) {
+      return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    //check password is good
-    if(!password || password.length < 6) {
-      return res.json({
-        error: 'Password is required and should be 6 characters long'
-      });
-
+    // Validate password length
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
     }
 
-    //check email
-    const exist = await User.findOne({email})
-    if(exist) {
-      return res.json({
-        error: "Email is taken alredy"
-      })
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use.' });
     }
 
-    //hash password
+    // Hash the password
     const hashedPassword = await hashPassword(password);
 
+    // Create the new user
+    const user = await User.create({
+      firstName,
+      lastName,
+      gender,
+      email,
+      mobileNumber,
+      dateOfBirth,
+      password: hashedPassword,
+    });
 
-
-
-    // create user in database
-    const user =await User.create({
-      name,email,password: hashedPassword,
-    })
-
-
-    return res.json(user)
+    return res.status(201).json({ message: 'User registered successfully', user });
 
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    return res.status(500).json({ error: 'Error registering user' });
   }
 };
 
