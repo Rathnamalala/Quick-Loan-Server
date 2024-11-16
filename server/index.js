@@ -3,6 +3,10 @@ const dotenv = require('dotenv').config();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+
+const userRoutes = require('./routes/authRoutes');
+const loanRoutes = require('./routes/loanRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 // Create express app
 const app = express();
 
@@ -24,7 +28,9 @@ app.use(express.urlencoded({extended: false}));
 
 
 
-app.use ('/', require('./routes/authroutes'));
+app.use('/api/users', userRoutes);
+app.use('/api/loans', loanRoutes);
+app.use('/api/documents', documentRoutes);
 
 
 
