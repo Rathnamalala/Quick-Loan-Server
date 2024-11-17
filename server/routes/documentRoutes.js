@@ -9,9 +9,8 @@ const {
 const { authenticateUser } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 
-// Multer configuration for file uploads
+// Multer configuration for file uploads (storing in memory)
 const upload = multer({ storage: multer.memoryStorage() });
-
 const router = express.Router();
 
 // Create a document (Upload)

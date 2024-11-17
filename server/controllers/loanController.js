@@ -51,18 +51,30 @@ const getUserLoans = async (req, res) => {
     }
 };
 
-// Update Loan (Eligibility and Suggested Loan Amount)
+// Update Loan (Eligibility, Suggested Loan Amount, and other fields)
 const updateLoan = async (req, res) => {
     try {
         const { loanId } = req.params;
-        const { eligibility_status, suggested_loan_amount } = req.body;
+        const { eligibility_status, suggested_loan_amount, personal_details, family_details, financial_details } = req.body;
 
         const loan = await Loan.findById(loanId);
         if (!loan) return res.status(404).json({ error: 'Loan not found' });
 
-        // Update fields
-        loan.eligibility_status = eligibility_status || loan.eligibility_status;
-        loan.suggested_loan_amount = suggested_loan_amount || loan.suggested_loan_amount;
+        // Update fields only if they are provided in the request body
+        if (eligibility_status) loan.eligibility_status = eligibility_status;
+        if (suggested_loan_amount) loan.suggested_loan_amount = suggested_loan_amount;
+
+        if (personal_details) {
+            loan.personal_details = { ...loan.personal_details, ...personal_details };  // Merge existing and updated details
+        }
+
+        if (family_details) {
+            loan.family_details = { ...loan.family_details, ...family_details };  // Merge existing and updated details
+        }
+
+        if (financial_details) {
+            loan.financial_details = { ...loan.financial_details, ...financial_details };  // Merge existing and updated details
+        }
 
         await loan.save();
         res.status(200).json({ message: 'Loan updated successfully', loan });
@@ -70,7 +82,8 @@ const updateLoan = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Error updating loan' });
     }
-};
+}
+;
 
 // Delete Loan
 const deleteLoan = async (req, res) => {
