@@ -12,10 +12,10 @@ const test = (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, gender, email, mobileNumber, dateOfBirth, password } = req.body;
+    const { first_name, last_name, username, gender, email, mobile, dob, password } = req.body;
 
     // Validate required fields
-    if (!firstName || !lastName || !gender || !email || !mobileNumber || !dateOfBirth) {
+    if (!first_name || !last_name || !username || !gender || !email || !mobile || !dob) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
@@ -30,22 +30,28 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Email is already in use.' });
     }
 
+    // Check if the username already exists
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({ error: 'Username is already in use.' });
+    }
+
     // Hash the password
     const hashedPassword = await hashPassword(password);
 
     // Create the new user
     const user = await User.create({
-      firstName,
-      lastName,
+      first_name,
+      last_name,
+      username,
       gender,
       email,
-      mobileNumber,
-      dateOfBirth,
+      mobile,
+      dob,
       password: hashedPassword,
     });
 
     return res.status(201).json({ message: 'User registered successfully', user });
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Error registering user' });
@@ -56,28 +62,61 @@ const registerUser = async (req, res) => {
 
 
 
-//loging endpoint
 const loginUser = async (req, res) => {
   try {
-    const {email, password} = req.body;
-    //check if email exist
-    const user = await User.findOne({email});
-    if(!user) {
-        return res.json({error: 'Invalid credentials'});
-      }
-    // check password
-    const match = await comparePassword(password, user.password);
-    if(match) {
-      jwt.sign({email: user.email, id: user._id}, process.env.JWT_SECRET, {}, (err, token) => {
-        if(err) throw err;
-        res.cookie('token', token).json(user);
-      });
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required.' });
     }
-    if(!match) {
-      return res.json({error: 'Invalid credentials'});
+
+    // Check if the username exists
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
     }
+
+    // Verify the password
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+
+    // Generate a token
+    const token = jwt.sign(
+      { username: user.username, id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' } // Token expires in 1 day
+    );
+
+    // Send the token as a cookie and response
+    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict' })
+      .status(200)
+      .json({ message: 'Login successful', user, token });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ error: 'Error logging in' });
   }
 };
-module.exports = { test, registerUser, loginUser };
+
+const logoutUser = (req, res) => {
+  try {
+    // Clear the authentication token cookie
+    res.clearCookie('token', {
+      httpOnly: true, // Prevent access by JavaScript
+      secure: true,   // Ensures cookie is sent only over HTTPS
+      sameSite: 'strict', // Prevents CSRF
+    })
+      .status(200)
+      .json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error logging out' });
+  }
+};
+
+module.exports = { test, registerUser, loginUser, logoutUser };
+
+
+
