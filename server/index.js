@@ -10,7 +10,10 @@ const documentRoutes = require('./routes/documentRoutes');
 // Create express app
 const app = express();
 
-
+app.use(cors({
+  origin: '*', // Allow all origins
+  credentials: true // Include cookies or headers for authentication
+}));
 
 
 // Connect to MongoDB
