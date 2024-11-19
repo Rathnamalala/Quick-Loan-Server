@@ -10,6 +10,7 @@ const loanSchema = new Schema({
     nic: { type: String, required: true },
     title: { type: String, required: true },
     home_town: { type: String, required: true },
+    permenet_address:{type: String,required:true},
     residential_address: { type: String, required: true },
     tax_payable: { type: Boolean, required: true }
   },
@@ -20,8 +21,9 @@ const loanSchema = new Schema({
     employment_type: { type: String, required: true },
     basic_salary: { type: Number, required: true },
     occupation: { type: String, required: true },
-    other_income: { type: Number, default: 0 }
-  },
+    other_income: { type: Number, default: 0 },
+    monthly_debit:{type:Number,default:true}  },
+
   eligibility_status: { type: String, required: true },
   suggested_loan_amount: { type: Number, required: true },
   application_date: { type: Date, default: Date.now }

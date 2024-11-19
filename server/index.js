@@ -10,10 +10,12 @@ const documentRoutes = require('./routes/documentRoutes');
 // Create express app
 const app = express();
 
-app.use(cors({
-  origin: '*', // Allow all origins
-  credentials: true // Include cookies or headers for authentication
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Allow requests from this origin
+    credentials: true, // Allow cookies to be sent
+  })
+);
 
 
 // Connect to MongoDB
@@ -39,6 +41,7 @@ app.use('/api/documents', documentRoutes);
 
 
 
-const port = 8000;
+const port = 8001;
 app.listen(port, () => {console.log(`Server is running on port ${port}`)});
+
 

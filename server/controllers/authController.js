@@ -19,6 +19,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
+    
     // Validate password length
     if (!password || password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
